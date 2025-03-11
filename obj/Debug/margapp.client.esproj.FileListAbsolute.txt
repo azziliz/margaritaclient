@@ -1,0 +1,1 @@
+C:\ccou\node\app\MargApp\margapp.client\obj\Debug\margapp.client.esproj.CoreCompileInputs.cache
