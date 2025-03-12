@@ -54,6 +54,10 @@ export default defineConfig({
             '^/api/menu': {
                 target,
                 secure: false
+            },
+            '^/api/orders': {
+                target,
+                secure: false
             }
         },
         port: 55887,

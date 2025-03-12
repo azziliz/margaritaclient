@@ -6,7 +6,7 @@
             Server unreachable. Please check your connection.
         </div>
 
-        <div v-if="post" class="content">
+        <div v-if="getmenuresponse" class="content">
             <table>
                 <thead>
                     <tr>
@@ -17,7 +17,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="menuitem in post" :key="menuitem.id">
+                    <tr v-for="menuitem in getmenuresponse" :key="menuitem.id">
                         <td @click="orderimpl[menuitem.id]++"><span v-if="orderimpl[menuitem.id] > 0">{{ orderimpl[menuitem.id] }}</span></td>
                         <td @click="orderimpl[menuitem.id]++">{{ menuitem.name }}</td>
                         <td @click="orderimpl[menuitem.id]++">{{ menuitem.price }} €</td>
@@ -27,7 +27,7 @@
             </table>
             <div>
                 <span v-if="Object.values(orderimpl).reduce((a, b) => a + b, 0) <= 0">Tapez sur les lignes<br>pour ajouter<br>des consommations<br>à la commande</span>
-                <span v-else><button>Envoyer</button></span>
+                <span v-else><button @click="async() => await this.postOrder()">Envoyer</button></span>
             </div>
         </div>
     </div>
@@ -40,7 +40,8 @@
         data() {
             return {
                 loading: false,
-                post: null,
+                getmenuresponse: null,
+                postorderresponse: null,
                 orderimpl : {}
             };
         },
@@ -55,17 +56,24 @@
         },
         methods: {
             async fetchData() {
-                this.post = null;
+                this.getmenuresponse = null;
                 this.loading = true;
 
                 var response = await fetch('api/menu');
                 if (response.ok) {
-                    this.post = await response.json();
+                    this.getmenuresponse = await response.json();
                     this.loading = false;
-                    this.post.forEach(element => {
+                    this.getmenuresponse.forEach(element => {
                         this.orderimpl[element.id] = 0;
                     });
                 }
+            },
+            async postOrder(){
+                this.postorderresponse = null;
+                this.loading = true;
+
+                const params = new URLSearchParams(window.location.search);
+                var response = await fetch('api/orders?cust=' + params.get("customerId"), {method : 'POST', headers:{'Content-Type': 'application/json'}, body:JSON.stringify({'customerId': params.get("customerId"), 'orderItems': Object.entries(this.orderimpl).map((arr)=>({menuId: arr[0], amount: arr[1]}))})});
             }
         },
     });
